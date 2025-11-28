@@ -1,0 +1,115 @@
+@model TownSquare.ViewModels.EventIndexViewModel
+
+@{
+    ViewData["Title"] = "Events";
+}
+
+<div class="row">
+    <div class="col-md-12">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <h2>@ViewData["Title"]</h2>
+            <a asp-action="Create" class="btn btn-primary">Create New Event</a>
+        </div>
+        <hr />
+
+        <form asp-action="Index" method="get" class="mb-4">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Search and Filter</h5>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="searchKeyword" class="form-label">Search Keywords</label>
+                            <input type="text" class="form-control" id="searchKeyword" name="searchKeyword"
+                                   value="@Model.SearchKeyword" placeholder="Search title, description, or location...">
+                        </div>
+
+                        <div class="col-md-6 mb-3">
+                            <label for="categoryFilter" class="form-label">Category</label>
+                            <select class="form-select" id="categoryFilter" name="categoryFilter">
+                                <option value="">All Categories</option>
+                                @foreach (var category in Model.Categories)
+                                {
+                                    <option value="@category" selected="@(Model.CategoryFilter == category)">@category</option>
+                                }
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="startDate" class="form-label">Start Date</label>
+                            <input type="date" class="form-control" id="startDate" name="startDate"
+                                   value="@Model.StartDate?.ToString("yyyy-MM-dd")">
+                        </div>
+
+                        <div class="col-md-6 mb-3">
+                            <label for="endDate" class="form-label">End Date</label>
+                            <input type="date" class="form-control" id="endDate" name="endDate"
+                                   value="@Model.EndDate?.ToString("yyyy-MM-dd")">
+                        </div>
+                    </div>
+
+                    <div class="d-flex gap-2">
+                        <button type="submit" class="btn btn-primary">Apply Filters</button>
+                        <a asp-action="Index" class="btn btn-secondary">Clear Filters</a>
+                    </div>
+                </div>
+            </div>
+        </form>
+
+        @if (Model.Events.Count == 0)
+        {
+            <div class="alert alert-info">
+                No events found. <a asp-action="Create">Create your first event!</a>
+            </div>
+        }
+        else
+        {
+            <div class="row">
+                @foreach (var item in Model.Events)
+                {
+                    <div class="col-md-6 col-lg-4 mb-4">
+                        <div class="card h-100">
+                            <div class="card-body">
+                                <h5 class="card-title">@item.Title</h5>
+                                <h6 class="card-subtitle mb-2 text-muted">@item.Category</h6>
+                                <p class="card-text">
+                                    @if (item.Description.Length > 100)
+                                    {
+                                        @(item.Description.Substring(0, 100) + "...")
+                                    }
+                                    else
+                                    {
+                                        @item.Description
+                                    }
+                                </p>
+                                <ul class="list-unstyled">
+                                    <li><strong>Date:</strong> @item.Date.ToString("MMM dd, yyyy")</li>
+                                    <li><strong>Time:</strong> @item.Time.ToString(@"hh\:mm")</li>
+                                    <li><strong>Location:</strong> @item.Location</li>
+                                    <li><small class="text-muted">By @item.User?.FullName</small></li>
+                                </ul>
+                            </div>
+                            <div class="card-footer bg-transparent">
+                                <div class="d-flex gap-2">
+                                    <a asp-action="Details" asp-route-id="@item.Id" class="btn btn-sm btn-info">Details</a>
+                                    @{
+                                        var currentUserId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+                                        var isOwner = item.UserId == currentUserId;
+                                        var isAdmin = User.FindFirst("Role")?.Value == "Admin";
+                                    }
+                                    @if (isOwner || isAdmin)
+                                    {
+                                        <a asp-action="Edit" asp-route-id="@item.Id" class="btn btn-sm btn-warning">Edit</a>
+                                        <a asp-action="Delete" asp-route-id="@item.Id" class="btn btn-sm btn-danger">Delete</a>
+                                    }
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                }
+            </div>
+        }
+    </div>
+</div>

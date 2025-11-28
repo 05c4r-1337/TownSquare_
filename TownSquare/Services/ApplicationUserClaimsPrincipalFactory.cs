@@ -22,6 +22,9 @@ public class ApplicationUserClaimsPrincipalFactory : UserClaimsPrincipalFactory<
         // Add FullName claim
         identity.AddClaim(new Claim("FullName", user.FullName ?? string.Empty));
 
+        // Add Role claim
+        identity.AddClaim(new Claim("Role", user.Role ?? string.Empty));
+
         return identity;
     }
 }

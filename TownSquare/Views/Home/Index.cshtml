@@ -1,8 +1,89 @@
-﻿@{
+﻿@model List<TownSquare.Models.Event>
+
+@{
     ViewData["Title"] = "Home Page";
 }
 
-<div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <p>Learn about <a href="https://learn.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
+<div class="text-center mb-4">
+    <h1 class="display-4">Welcome to TownSquare</h1>
+    <p class="lead">Discover and join upcoming events in your community</p>
+</div>
+
+<div class="row">
+    <div class="col-md-12">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <h2>Upcoming Events</h2>
+            @if (User.Identity?.IsAuthenticated == true)
+            {
+                <a asp-controller="Events" asp-action="Index" class="btn btn-primary">View All Events</a>
+            }
+            else
+            {
+                <a asp-controller="Account" asp-action="Login" class="btn btn-primary">Login to View Events</a>
+            }
+        </div>
+
+        @if (Model.Count == 0)
+        {
+            <div class="alert alert-info">
+                @if (User.Identity?.IsAuthenticated == true)
+                {
+                    <p class="mb-0">No upcoming events scheduled. <a asp-controller="Events" asp-action="Create">Create the first event!</a></p>
+                }
+                else
+                {
+                    <p class="mb-0">No upcoming events scheduled. <a asp-controller="Account" asp-action="Login">Login</a> to create events.</p>
+                }
+            </div>
+        }
+        else
+        {
+            <div class="row">
+                @foreach (var item in Model)
+                {
+                    <div class="col-md-6 col-lg-4 mb-4">
+                        <div class="card h-100">
+                            <div class="card-body">
+                                <h5 class="card-title">@item.Title</h5>
+                                <h6 class="card-subtitle mb-2 text-muted">@item.Category</h6>
+                                <p class="card-text">
+                                    @if (item.Description.Length > 100)
+                                    {
+                                        @(item.Description.Substring(0, 100) + "...")
+                                    }
+                                    else
+                                    {
+                                        @item.Description
+                                    }
+                                </p>
+                                <ul class="list-unstyled">
+                                    <li><strong>Date:</strong> @item.Date.ToString("MMM dd, yyyy")</li>
+                                    <li><strong>Time:</strong> @item.Time.ToString(@"hh\:mm")</li>
+                                    <li><strong>Location:</strong> @item.Location</li>
+                                    <li><small class="text-muted">By @item.User?.FullName</small></li>
+                                </ul>
+                            </div>
+                            <div class="card-footer bg-transparent">
+                                @if (User.Identity?.IsAuthenticated == true)
+                                {
+                                    <a asp-controller="Events" asp-action="Details" asp-route-id="@item.Id" class="btn btn-sm btn-info">View Details</a>
+                                }
+                                else
+                                {
+                                    <a asp-controller="Account" asp-action="Login" class="btn btn-sm btn-primary">Login to View</a>
+                                }
+                            </div>
+                        </div>
+                    </div>
+                }
+            </div>
+
+            @if (Model.Count == 10)
+            {
+                <div class="text-center mt-3">
+                    <a asp-controller="Events" asp-action="Index" class="btn btn-outline-primary">View All Events</a>
+                </div>
+            }
+        }
+    </div>
 </div>
