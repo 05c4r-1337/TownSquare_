@@ -131,7 +131,13 @@ public class EventsController : Controller
         }
 
         var user = await _userManager.GetUserAsync(User);
-        if (user == null || eventItem.UserId != user.Id)
+        if (user == null)
+        {
+            return Forbid();
+        }
+
+        // Allow if user is admin or owns the event
+        if (user.Role != "Admin" && eventItem.UserId != user.Id)
         {
             return Forbid();
         }
@@ -149,7 +155,13 @@ public class EventsController : Controller
         }
 
         var user = await _userManager.GetUserAsync(User);
-        if (user == null || eventItem.UserId != user.Id)
+        if (user == null)
+        {
+            return Forbid();
+        }
+
+        // Allow if user is admin or owns the event
+        if (user.Role != "Admin" && eventItem.UserId != user.Id)
         {
             return Forbid();
         }
@@ -196,7 +208,13 @@ public class EventsController : Controller
         }
 
         var user = await _userManager.GetUserAsync(User);
-        if (user == null || eventItem.UserId != user.Id)
+        if (user == null)
+        {
+            return Forbid();
+        }
+
+        // Allow if user is admin or owns the event
+        if (user.Role != "Admin" && eventItem.UserId != user.Id)
         {
             return Forbid();
         }
@@ -215,7 +233,13 @@ public class EventsController : Controller
         }
 
         var user = await _userManager.GetUserAsync(User);
-        if (user == null || eventItem.UserId != user.Id)
+        if (user == null)
+        {
+            return Forbid();
+        }
+
+        // Allow if user is admin or owns the event
+        if (user.Role != "Admin" && eventItem.UserId != user.Id)
         {
             return Forbid();
         }

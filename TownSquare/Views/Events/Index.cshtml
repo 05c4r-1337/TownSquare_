@@ -94,7 +94,12 @@
                             <div class="card-footer bg-transparent">
                                 <div class="d-flex gap-2">
                                     <a asp-action="Details" asp-route-id="@item.Id" class="btn btn-sm btn-info">Details</a>
-                                    @if (item.UserId == User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value)
+                                    @{
+                                        var currentUserId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+                                        var isOwner = item.UserId == currentUserId;
+                                        var isAdmin = User.FindFirst("Role")?.Value == "Admin";
+                                    }
+                                    @if (isOwner || isAdmin)
                                     {
                                         <a asp-action="Edit" asp-route-id="@item.Id" class="btn btn-sm btn-warning">Edit</a>
                                         <a asp-action="Delete" asp-route-id="@item.Id" class="btn btn-sm btn-danger">Delete</a>
