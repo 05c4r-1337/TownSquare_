@@ -1,4 +1,4 @@
-﻿@model List<TownSquare.Models.Event>
+﻿@model List<TownSquare.ViewModels.EventWithRSVPViewModel>
 
 @{
     ViewData["Title"] = "Home Page";
@@ -39,34 +39,35 @@
         else
         {
             <div class="row">
-                @foreach (var item in Model)
+                @foreach (var eventItem in Model)
                 {
                     <div class="col-md-6 col-lg-4 mb-4">
                         <div class="card h-100">
                             <div class="card-body">
-                                <h5 class="card-title">@item.Title</h5>
-                                <h6 class="card-subtitle mb-2 text-muted">@item.Category</h6>
+                                <h5 class="card-title">@eventItem.Event.Title</h5>
+                                <h6 class="card-subtitle mb-2 text-muted">@eventItem.Event.Category</h6>
                                 <p class="card-text">
-                                    @if (item.Description.Length > 100)
+                                    @if (eventItem.Event.Description.Length > 100)
                                     {
-                                        @(item.Description.Substring(0, 100) + "...")
+                                        @(eventItem.Event.Description.Substring(0, 100) + "...")
                                     }
                                     else
                                     {
-                                        @item.Description
+                                        @eventItem.Event.Description
                                     }
                                 </p>
                                 <ul class="list-unstyled">
-                                    <li><strong>Date:</strong> @item.Date.ToString("MMM dd, yyyy")</li>
-                                    <li><strong>Time:</strong> @item.Time.ToString(@"hh\:mm")</li>
-                                    <li><strong>Location:</strong> @item.Location</li>
-                                    <li><small class="text-muted">By @item.User?.FullName</small></li>
+                                    <li><strong>Date:</strong> @eventItem.Event.Date.ToString("MMM dd, yyyy")</li>
+                                    <li><strong>Time:</strong> @eventItem.Event.Time.ToString(@"hh\:mm")</li>
+                                    <li><strong>Location:</strong> @eventItem.Event.Location</li>
+                                    <li><strong>RSVPs:</strong> @eventItem.RSVPCount</li>
+                                    <li><small class="text-muted">By @eventItem.Event.User?.FullName</small></li>
                                 </ul>
                             </div>
                             <div class="card-footer bg-transparent">
                                 @if (User.Identity?.IsAuthenticated == true)
                                 {
-                                    <a asp-controller="Events" asp-action="Details" asp-route-id="@item.Id" class="btn btn-sm btn-info">View Details</a>
+                                    <a asp-controller="Events" asp-action="Details" asp-route-id="@eventItem.Event.Id" class="btn btn-sm btn-info">View Details</a>
                                 }
                                 else
                                 {

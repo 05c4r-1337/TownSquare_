@@ -27,7 +27,21 @@ public class HomeController : Controller
             .Take(10)
             .ToListAsync();
 
-        return View(upcomingEvents);
+        // Get RSVP counts for each event
+        var eventIds = upcomingEvents.Select(e => e.Id).ToList();
+        var rsvpCounts = await _context.RSVPs
+            .Where(r => eventIds.Contains(r.EventId))
+            .GroupBy(r => r.EventId)
+            .Select(g => new { EventId = g.Key, Count = g.Count() })
+            .ToDictionaryAsync(x => x.EventId, x => x.Count);
+
+        var eventsWithRSVP = upcomingEvents.Select(e => new ViewModels.EventWithRSVPViewModel
+        {
+            Event = e,
+            RSVPCount = rsvpCounts.ContainsKey(e.Id) ? rsvpCounts[e.Id] : 0
+        }).ToList();
+
+        return View(eventsWithRSVP);
     }
 
     public IActionResult Privacy()
