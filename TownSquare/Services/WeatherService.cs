@@ -1,3 +1,4 @@
+using System.Globalization;
 using System.Text.Json;
 using TownSquare.Models;
 
@@ -6,25 +7,37 @@ namespace TownSquare.Services;
 public class WeatherService
 {
     private readonly HttpClient _httpClient;
+    private readonly ILogger<WeatherService> _logger;
     private const double BorasLatitude = 57.7210;
     private const double BorasLongitude = 12.9401;
 
-    public WeatherService(HttpClient httpClient)
+    public WeatherService(HttpClient httpClient, ILogger<WeatherService> logger)
     {
         _httpClient = httpClient;
+        _logger = logger;
     }
 
     public async Task<WeatherForecast?> GetWeatherForecastAsync(DateTime date)
     {
         try
         {
-            var dateString = date.ToString("yyyy-MM-dd");
-            var url = $"https://api.open-meteo.com/v1/forecast?latitude={BorasLatitude}&longitude={BorasLongitude}&daily=temperature_2m_max,temperature_2m_min,weathercode,windspeed_10m_max,precipitation_probability_max&timezone=Europe/Stockholm&start_date={dateString}&end_date={dateString}";
+            // Use InvariantCulture to ensure consistent date formatting
+            var dateString = date.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
+
+            // Use InvariantCulture for latitude/longitude to ensure period as decimal separator
+            var latitude = BorasLatitude.ToString(CultureInfo.InvariantCulture);
+            var longitude = BorasLongitude.ToString(CultureInfo.InvariantCulture);
+
+            var url = $"https://api.open-meteo.com/v1/forecast?latitude={latitude}&longitude={longitude}&daily=temperature_2m_max,temperature_2m_min,weathercode,windspeed_10m_max,precipitation_probability_max&timezone=Europe/Stockholm&start_date={dateString}&end_date={dateString}";
+
+            _logger.LogInformation("Fetching weather forecast for {Date} from URL: {Url}", dateString, url);
 
             var response = await _httpClient.GetAsync(url);
 
             if (!response.IsSuccessStatusCode)
             {
+                var errorContent = await response.Content.ReadAsStringAsync();
+                _logger.LogWarning("Weather API returned {StatusCode}: {ErrorContent}", response.StatusCode, errorContent);
                 return null;
             }
 
@@ -48,8 +61,9 @@ public class WeatherService
                 WindSpeed = windSpeed
             };
         }
-        catch
+        catch (Exception ex)
         {
+            _logger.LogError(ex, "Error fetching weather forecast for date {Date}", date);
             return null;
         }
     }
