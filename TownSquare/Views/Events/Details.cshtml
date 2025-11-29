@@ -71,6 +71,34 @@
             </div>
         </div>
 
+        @if (Model.Weather != null)
+        {
+            <div class="card mb-3">
+                <div class="card-body">
+                    <h5 class="card-title">Weather Forecast for Borås</h5>
+                    <div class="row">
+                        <div class="col-md-12">
+                            <div class="d-flex align-items-center mb-3">
+                                <span style="font-size: 3rem;">@Model.Weather.Icon</span>
+                                <div class="ms-3">
+                                    <h3 class="mb-0">@Model.Weather.Temperature.ToString("F1")°C</h3>
+                                    <p class="mb-0 text-muted">@Model.Weather.Description</p>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <strong>Wind Speed:</strong> @Model.Weather.WindSpeed.ToString("F1") km/h
+                                </div>
+                                <div class="col-md-6">
+                                    <strong>Precipitation Probability:</strong> @Model.Weather.Humidity%
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }
+
         @if (Model.IsAuthenticated && Model.RSVPUsers.Count > 0)
         {
             <div class="card mb-3">

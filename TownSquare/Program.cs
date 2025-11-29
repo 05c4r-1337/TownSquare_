@@ -35,6 +35,9 @@ builder.Services.ConfigureApplicationCookie(options =>
 
 builder.Services.AddControllersWithViews();
 
+// Register WeatherService with HttpClient
+builder.Services.AddHttpClient<WeatherService>();
+
 var app = builder.Build();
 
 // Seed the database
