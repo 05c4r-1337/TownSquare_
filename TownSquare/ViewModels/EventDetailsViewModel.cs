@@ -9,4 +9,5 @@ public class EventDetailsViewModel
     public List<ApplicationUser> RSVPUsers { get; set; } = new();
     public bool CurrentUserRSVPd { get; set; }
     public bool IsAuthenticated { get; set; }
+    public WeatherForecast? Weather { get; set; }
 }

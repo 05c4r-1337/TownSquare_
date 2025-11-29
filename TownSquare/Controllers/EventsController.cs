@@ -5,6 +5,7 @@ using Microsoft.EntityFrameworkCore;
 using TownSquare.Data;
 using TownSquare.Models;
 using TownSquare.ViewModels;
+using TownSquare.Services;
 
 namespace TownSquare.Controllers;
 
@@ -13,11 +14,13 @@ public class EventsController : Controller
 {
     private readonly ApplicationDbContext _context;
     private readonly UserManager<ApplicationUser> _userManager;
+    private readonly WeatherService _weatherService;
 
-    public EventsController(ApplicationDbContext context, UserManager<ApplicationUser> userManager)
+    public EventsController(ApplicationDbContext context, UserManager<ApplicationUser> userManager, WeatherService weatherService)
     {
         _context = context;
         _userManager = userManager;
+        _weatherService = weatherService;
     }
 
     [HttpGet]
@@ -107,13 +110,17 @@ public class EventsController : Controller
         var currentUserId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
         var currentUserRSVPd = currentUserId != null && rsvps.Any(r => r.UserId == currentUserId);
 
+        // Get weather forecast for event date
+        var weather = await _weatherService.GetWeatherForecastAsync(eventItem.Date);
+
         var viewModel = new EventDetailsViewModel
         {
             Event = eventItem,
             RSVPCount = rsvps.Count,
             RSVPUsers = rsvps.Select(r => r.User!).ToList(),
             CurrentUserRSVPd = currentUserRSVPd,
-            IsAuthenticated = User.Identity?.IsAuthenticated ?? false
+            IsAuthenticated = User.Identity?.IsAuthenticated ?? false,
+            Weather = weather
         };
 
         return View(viewModel);
