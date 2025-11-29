@@ -120,13 +120,13 @@
                 @if (Model.CurrentUserRSVPd)
                 {
                     <form asp-action="CancelRSVP" asp-route-id="@Model.Event.Id" method="post" class="d-inline">
-                        <button type="submit" class="btn btn-warning">Cancel RSVP</button>
+                        <button type="submit" class="btn btn-warning">Cancel Attendance</button>
                     </form>
                 }
                 else
                 {
                     <form asp-action="RSVP" asp-route-id="@Model.Event.Id" method="post" class="d-inline">
-                        <button type="submit" class="btn btn-success">RSVP</button>
+                        <button type="submit" class="btn btn-success">Attend</button>
                     </form>
                 }
 
@@ -142,7 +142,7 @@
             }
             else
             {
-                <a asp-controller="Account" asp-action="Login" class="btn btn-primary">Login to RSVP</a>
+                <a asp-controller="Account" asp-action="Login" class="btn btn-primary">Login to Attend</a>
             }
             <a asp-action="Index" class="btn btn-secondary">Back to List</a>
         </div>
