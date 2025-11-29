@@ -54,9 +54,23 @@ public class EventsController : Controller
         var events = await eventsQuery.OrderBy(e => e.Date).ThenBy(e => e.Time).ToListAsync();
         var categories = await _context.Events.Select(e => e.Category).Distinct().OrderBy(c => c).ToListAsync();
 
+        // Get RSVP counts for each event
+        var eventIds = events.Select(e => e.Id).ToList();
+        var rsvpCounts = await _context.RSVPs
+            .Where(r => eventIds.Contains(r.EventId))
+            .GroupBy(r => r.EventId)
+            .Select(g => new { EventId = g.Key, Count = g.Count() })
+            .ToDictionaryAsync(x => x.EventId, x => x.Count);
+
+        var eventsWithRSVP = events.Select(e => new EventWithRSVPViewModel
+        {
+            Event = e,
+            RSVPCount = rsvpCounts.ContainsKey(e.Id) ? rsvpCounts[e.Id] : 0
+        }).ToList();
+
         var viewModel = new EventIndexViewModel
         {
-            Events = events,
+            Events = eventsWithRSVP,
             SearchKeyword = searchKeyword,
             CategoryFilter = categoryFilter,
             StartDate = startDate,
@@ -84,7 +98,25 @@ public class EventsController : Controller
             return NotFound();
         }
 
-        return View(eventItem);
+        // Get RSVP information
+        var rsvps = await _context.RSVPs
+            .Include(r => r.User)
+            .Where(r => r.EventId == id)
+            .ToListAsync();
+
+        var currentUserId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+        var currentUserRSVPd = currentUserId != null && rsvps.Any(r => r.UserId == currentUserId);
+
+        var viewModel = new EventDetailsViewModel
+        {
+            Event = eventItem,
+            RSVPCount = rsvps.Count,
+            RSVPUsers = rsvps.Select(r => r.User!).ToList(),
+            CurrentUserRSVPd = currentUserRSVPd,
+            IsAuthenticated = User.Identity?.IsAuthenticated ?? false
+        };
+
+        return View(viewModel);
     }
 
     [HttpGet]
@@ -247,6 +279,84 @@ public class EventsController : Controller
         _context.Events.Remove(eventItem);
         await _context.SaveChangesAsync();
         return RedirectToAction(nameof(Index));
+    }
+
+    [HttpPost]
+    [Authorize]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> RSVP(int id)
+    {
+        var eventItem = await _context.Events.Include(e => e.User).FirstOrDefaultAsync(e => e.Id == id);
+        if (eventItem == null)
+        {
+            return NotFound();
+        }
+
+        var user = await _userManager.GetUserAsync(User);
+        if (user == null)
+        {
+            return RedirectToAction("Login", "Account");
+        }
+
+        // Check if already RSVP'd
+        var existingRSVP = await _context.RSVPs
+            .FirstOrDefaultAsync(r => r.EventId == id && r.UserId == user.Id);
+
+        if (existingRSVP != null)
+        {
+            // Already RSVP'd, just redirect back
+            return RedirectToAction(nameof(Details), new { id });
+        }
+
+        // Create new RSVP
+        var rsvp = new RSVP
+        {
+            EventId = id,
+            UserId = user.Id,
+            CreatedAt = DateTime.UtcNow
+        };
+
+        _context.RSVPs.Add(rsvp);
+
+        // Create notification for event creator (if not RSVPing to own event)
+        if (eventItem.UserId != user.Id)
+        {
+            var notification = new Notification
+            {
+                UserId = eventItem.UserId,
+                Message = $"{user.FullName} RSVP'd to your event '{eventItem.Title}'",
+                EventId = id,
+                IsRead = false,
+                CreatedAt = DateTime.UtcNow
+            };
+            _context.Notifications.Add(notification);
+        }
+
+        await _context.SaveChangesAsync();
+        return RedirectToAction(nameof(Details), new { id });
+    }
+
+    [HttpPost]
+    [Authorize]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> CancelRSVP(int id)
+    {
+        var user = await _userManager.GetUserAsync(User);
+        if (user == null)
+        {
+            return RedirectToAction("Login", "Account");
+        }
+
+        var rsvp = await _context.RSVPs
+            .FirstOrDefaultAsync(r => r.EventId == id && r.UserId == user.Id);
+
+        if (rsvp != null)
+        {
+            _context.RSVPs.Remove(rsvp);
+            await _context.SaveChangesAsync();
+        }
+
+        return RedirectToAction(nameof(Details), new { id });
     }
 
     private bool EventExists(int id)
