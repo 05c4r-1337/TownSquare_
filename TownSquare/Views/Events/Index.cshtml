@@ -73,7 +73,7 @@
                         <div class="card h-100">
                             <div class="card-body">
                                 <h5 class="card-title">@eventItem.Event.Title</h5>
-                                <h6 class="card-subtitle mb-2 text-muted">@eventItem.Event.Category</h6>
+                                <div class="mb-2"><span class="badge bg-primary">@eventItem.Event.Category</span></div>
                                 <p class="card-text">
                                     @if (eventItem.Event.Description.Length > 100)
                                     {
