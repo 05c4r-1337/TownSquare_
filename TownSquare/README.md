@@ -21,3 +21,8 @@ type of weather there will be during the event.
 If you are logged in as a user and have created an event, when another user Registers to your
 event you will get a notification that tells you what user has registered to your event. 
 
+For events that you as a user have created you can also edit and delete that event.
+
+For admins you can edit and delete other users events.
+the login for admin is admin@townsquare.com with the password admin, if you want to test the functions.
+
