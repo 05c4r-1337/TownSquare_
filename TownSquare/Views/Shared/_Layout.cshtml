@@ -37,13 +37,13 @@
                             <span class="nav-link text-dark">Hello, @User.FindFirst("FullName")?.Value!</span>
                         </li>
                         <li class="nav-item">
-                            <a class="btn btn-secondary" asp-controller="Account" asp-action="Profile">Profile</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="btn btn-secondary" asp-controller="Notifications" asp-action="Index">
+                            <a class="btn btn-secondary d-inline-flex align-items-center" asp-controller="Notifications" asp-action="Index">
                                 <img src="~/notifications_24dp_E3E3E3_FILL0_wght400_GRAD0_opsz24.svg" alt="Notifications" width="24" height="24" />
                                 @await Component.InvokeAsync("UnreadNotificationCount")
                             </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="btn btn-secondary" asp-controller="Account" asp-action="Profile">Profile</a>
                         </li>
                         <li class="nav-item">
                             <form asp-controller="Account" asp-action="Logout" method="post" class="d-inline">
